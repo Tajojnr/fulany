@@ -1,0 +1,130 @@
+﻿/* app/globals.css */
+@import "tailwindcss";
+
+/* ───────── Brand tokens (Tailwind v4) ───────── */
+@theme {
+  --color-gold: #c9a45c;
+  --color-cream: #f5f2eb;
+  --color-ink: #080706;
+
+  /* Soft variants: bg-gold-soft, border-gold-line */
+  --color-gold-soft: rgb(201 164 92 / 0.15);
+  --color-gold-line: rgb(201 164 92 / 0.3);
+
+  /* Font utilities: font-display, font-body */
+  --font-display: var(--font-display, Georgia), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-body, system-ui), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  --bg-dark: var(--color-ink);
+  --gold: var(--color-gold);
+  --cream: var(--color-cream);
+  --logo-h: 40px;
+  --header-h: 4.5rem;
+  color-scheme: dark; /* dark native controls, scrollbars, autofill */
+}
+
+@layer base {
+  html {
+    background-color: var(--bg-dark); /* no flash on iOS overscroll */
+    color: var(--cream);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: var(--header-h);
+    scrollbar-width: thin;
+    scrollbar-color: rgb(201 164 92 / 0.35) var(--bg-dark);
+  }
+
+  /* No overflow-x on html/body: it breaks position: sticky. */
+  body {
+    min-height: 100vh;
+    min-height: 100svh;
+    background-color: var(--bg-dark);
+    color: var(--cream);
+    font-family: var(--font-body, system-ui), system-ui, -apple-system,
+      "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display, Georgia), Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  a { color: inherit; text-decoration: none; }
+
+  canvas { display: block; }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) { cursor: pointer; }
+
+  a, button, input, select, textarea, label {
+    touch-action: manipulation; /* no double-tap zoom delay */
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: rgb(201 164 92 / 0.35);
+    color: var(--cream);
+  }
+}
+
+@layer components {
+  .brand-logo-img {
+    display: block;
+    height: var(--logo-h);
+    width: auto;
+    object-fit: contain;
+  }
+
+  .animate-drawer-in {
+    animation: drawer-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.25s ease both;
+  }
+}
+
+@keyframes drawer-in {
+  from { transform: translateX(100%); }
+  to   { transform: none; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Deliberately unlayered so it beats Tailwind's text-sm on inputs.
+   iPhones zoom the page when a field under 16px is focused. */
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px; }
+}
