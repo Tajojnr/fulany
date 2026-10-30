@@ -2,7 +2,8 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Jost } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/context/CartContext";
+import { WHATSAPP_NUMBER, CONTACT_EMAIL } from "@/lib/constants";
+import { FAQ } from "@/lib/faq";
 
 const display = Cormorant_Garamond({
   subsets: ["latin"],
@@ -19,11 +20,16 @@ const body = Jost({
 });
 
 const SITE_URL = "https://fulany.ng";
+const ORG_ID = `${SITE_URL}/#organization`;
+const FOUNDER_ID = `${SITE_URL}/#founder`;
 
 const SOCIAL_PROFILES: string[] = [
-  "https://www.tiktok.com/@fulany.ng?lang=en",
+  "https://www.tiktok.com/@fulany.ng",
   "https://instagram.com/fulany_ng",
 ];
+
+const DESCRIPTION =
+  "Handcrafted in Nigeria by Hafsah Sani. Pure cold-pressed botanical hair oils, elixirs, and whipped butters.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -31,10 +37,10 @@ export const metadata: Metadata = {
     default: "Fulany.ng | West African Botanical Hair Care by Hafsah Sani",
     template: "%s | Fulany.ng",
   },
-  description:
-    "Handcrafted in Nigeria by Hafsah Sani. Pure cold-pressed botanical hair oils, elixirs, and whipped butters.",
+  description: DESCRIPTION,
   applicationName: "Fulany.ng",
-  alternates: { canonical: "/" },
+  // No canonical or openGraph.url here: each page sets its own,
+  // so sub-pages never claim the homepage as their canonical address.
   icons: {
     icon: "/favicon-32x32.png",
     apple: "/apple-touch-icon.png",
@@ -42,11 +48,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_NG",
-    url: SITE_URL,
     siteName: "Fulany.ng",
     title: "Fulany.ng | West African Botanical Hair Care",
-    description:
-      "Handcrafted in Nigeria by Hafsah Sani. Pure cold-pressed botanical hair oils, elixirs, and whipped butters.",
+    description: DESCRIPTION,
     images: [
       {
         url: "/og-image.jpg",
@@ -59,8 +63,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Fulany.ng | West African Botanical Hair Care",
-    description:
-      "Handcrafted in Nigeria by Hafsah Sani. Pure cold-pressed botanical hair oils, elixirs, and whipped butters.",
+    description: DESCRIPTION,
     images: ["/og-image.jpg"],
   },
   robots: { index: true, follow: true },
@@ -74,65 +77,42 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-const organizationSchema = {
+// One linked graph instead of three separate scripts
+const structuredData = {
   "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Fulany.ng",
-  url: SITE_URL,
-  logo: `${SITE_URL}/fulany-logo-transparent.png`,
-  description: "West African botanical hair care, handcrafted in Nigeria.",
-  founder: { "@type": "Person", name: "Hafsah Sani" },
-  contactPoint: {
-    "@type": "ContactPoint",
-    telephone: "+234-916-075-9492",
-    email: "sanihafsah93@gmail.com",
-    contactType: "customer support",
-    areaServed: "NG",
-    availableLanguage: "English",
-  },
-  sameAs: SOCIAL_PROFILES,
-};
-
-const personSchema = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Hafsah Sani",
-  jobTitle: "Founder & Formulator",
-  worksFor: {
-    "@type": "Organization",
-    name: "Fulany.ng",
-  },
-  description:
-    "Founder and formulator of Fulany.ng, specializing in West African botanical hair and skin care.",
-};
-
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
+  "@graph": [
     {
-      "@type": "Question",
-      name: "What are the shipping costs within Nigeria?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "We offer a standard delivery fee of ₦2,000 nationwide. Complimentary delivery is automatically applied to all orders exceeding ₦10,000.",
+      "@type": "Organization",
+      "@id": ORG_ID,
+      name: "Fulany.ng",
+      url: SITE_URL,
+      logo: `${SITE_URL}/fulany-logo-transparent.png`,
+      description: "West African botanical hair care, handcrafted in Nigeria.",
+      founder: { "@id": FOUNDER_ID },
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: `+${WHATSAPP_NUMBER}`,
+        email: CONTACT_EMAIL,
+        contactType: "customer support",
+        areaServed: "NG",
+        availableLanguage: "English",
       },
+      sameAs: SOCIAL_PROFILES,
     },
     {
-      "@type": "Question",
-      name: "Are your products made with natural ingredients?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes, our formulations use pure cold-pressed botanical oils, unrefined West African shea butter, and herbal matrices. We use zero harsh synthetics.",
-      },
+      "@type": "Person",
+      "@id": FOUNDER_ID,
+      name: "Hafsah Sani",
+      jobTitle: "Founder & Formulator",
+      worksFor: { "@id": ORG_ID },
     },
     {
-      "@type": "Question",
-      name: "How can I contact Fulany.ng customer support?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "You can reach us directly via WhatsApp at +234 916 075 9492 or email us at sanihafsah93@gmail.com.",
-      },
+      "@type": "FAQPage",
+      mainEntity: FAQ.map(({ question, answer }) => ({
+        "@type": "Question",
+        name: question,
+        acceptedAnswer: { "@type": "Answer", text: answer },
+      })),
     },
   ],
 };
@@ -154,24 +134,12 @@ export default function RootLayout({
           Skip to content
         </a>
 
-        <CartProvider>{children}</CartProvider>
+        {children}
 
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c"),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(personSchema).replace(/</g, "\\u003c"),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c"),
+            __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
           }}
         />
       </body>
