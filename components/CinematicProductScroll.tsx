@@ -28,7 +28,7 @@ interface CinematicStageProps {
   onBuyClick: () => void;
 }
 
-const READY_FRAMES = 30; // the spinner clears once this many frames are loaded
+const READY_FRAMES = 5; // Ready almost instantly after first few frames load
 
 const posterSrc = (folderPath: string, frameCount: number) =>
   `/${folderPath}/frame-${String(frameCount).padStart(4, "0")}.webp`;
@@ -104,19 +104,12 @@ export function CinematicProductScroll({
 }: CinematicStageProps) {
   const containerRef = useRef<HTMLElement>(null);
   const reducedMotion = usePrefersReducedMotion();
-  const [saveData, setSaveData] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const [added, setAdded] = useState(false);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Reduced motion or Data Saver: one still image instead of 240 frames
-  const staticMode = reducedMotion || saveData;
-
-  useEffect(() => {
-    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } })
-      .connection;
-    if (conn?.saveData) setSaveData(true);
-  }, []);
+  // Static mode ONLY if user explicitly enabled prefers-reduced-motion in OS
+  const staticMode = reducedMotion;
 
   // Start loading when the section is near, then stop watching
   useEffect(() => {
@@ -165,7 +158,7 @@ export function CinematicProductScroll({
     addedTimer.current = setTimeout(() => setAdded(false), 1800);
   };
 
-  /* ───────── Still version (reduced motion / Data Saver) ───────── */
+  /* ───────── Still version (reduced motion only) ───────── */
   if (staticMode) {
     return (
       <section
@@ -209,7 +202,7 @@ export function CinematicProductScroll({
       className="relative h-[320svh] bg-ink"
     >
       <div className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden">
-        {/* Screen readers get the content once, in order; the visual cards are decorative */}
+        {/* Screen readers get the content once, in order */}
         <div className="sr-only">
           <h2>{productName}</h2>
           <ul>
@@ -221,7 +214,7 @@ export function CinematicProductScroll({
           </ul>
         </div>
 
-        {/* Loading: only until the first frames are ready to scrub */}
+        {/* Loading: only until first few frames are ready */}
         {isInView && !ready && (
           <div
             role="status"
@@ -238,7 +231,7 @@ export function CinematicProductScroll({
 
         <Veil />
 
-        {/* Annotations: full-width band on phones, your x/y coordinates from tablet up */}
+        {/* Annotations */}
         {annotations.map((ann) => {
           const visible =
             !showCta && currentFrame >= ann.startFrame && currentFrame <= ann.endFrame;
@@ -277,7 +270,7 @@ export function CinematicProductScroll({
           </div>
         </div>
 
-        {/* Thin progress line while the remaining frames stream in */}
+        {/* Thin progress line while remaining frames stream in */}
         {ready && !isLoaded && (
           <div aria-hidden="true" className="absolute inset-x-0 bottom-0 z-30 h-0.5 bg-white/10">
             <div

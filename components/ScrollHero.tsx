@@ -1,17 +1,15 @@
 ﻿// components/ScrollHero.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useFramePreloader } from "@/hooks/useFramePreloader";
 import { useScrollFrame } from "@/hooks/useScrollFrame";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { FrameCanvas } from "@/components/FrameCanvas";
 
-// Number of files in public/frames. Update this if you re-export the sequence.
 const TOTAL_FRAMES = 121;
-const READY_FRAMES = 30;
+const READY_FRAMES = 5;
 
-// Which frame to show to reduced-motion / Data Saver visitors (1 = first, TOTAL_FRAMES = last)
 const STILL_FRAME = 1;
 
 const frameSrc = (n: number) => `/frames/frame-${String(n).padStart(4, "0")}.webp`;
@@ -35,15 +33,9 @@ function HeroCopy({ style }: { style?: React.CSSProperties }) {
 export function ScrollHero() {
   const containerRef = useRef<HTMLElement>(null);
   const reducedMotion = usePrefersReducedMotion();
-  const [saveData, setSaveData] = useState(false);
 
-  useEffect(() => {
-    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } })
-      .connection;
-    if (conn?.saveData) setSaveData(true);
-  }, []);
-
-  const staticMode = reducedMotion || saveData;
+  // Static mode ONLY if user explicitly enabled prefers-reduced-motion
+  const staticMode = reducedMotion;
 
   const { images, progress, loadedCount } = useFramePreloader(
     TOTAL_FRAMES,
@@ -54,7 +46,7 @@ export function ScrollHero() {
 
   const ready = loadedCount >= Math.min(READY_FRAMES, TOTAL_FRAMES);
 
-  /* ───────── Still version ───────── */
+  /* ───────── Still version (reduced motion only) ───────── */
   if (staticMode) {
     return (
       <section
@@ -82,7 +74,6 @@ export function ScrollHero() {
   /* ───────── Scroll-scrubbed version ───────── */
   const progressFraction = currentFrame / Math.max(TOTAL_FRAMES - 1, 1);
 
-  // Headline stays fully visible for the first moments, then fades out by ~35% of the scroll
   const copyOpacity = clamp01(1 - (progressFraction - 0.08) / 0.27);
   const hintVisible = currentFrame < 4;
 
@@ -93,7 +84,6 @@ export function ScrollHero() {
       className="relative h-[250svh] bg-ink"
     >
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
-        {/* First frame as a plain image: visitors never see a blank stage while frames stream in */}
         {!ready && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -110,12 +100,10 @@ export function ScrollHero() {
 
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-ink via-ink/20 to-ink/60" />
 
-        {/* Headline: always in the DOM for SEO and screen readers, only the opacity changes */}
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center px-6 md:px-16">
           <HeroCopy style={{ opacity: copyOpacity }} />
         </div>
 
-        {/* Bottom slot: loading status first, then the scroll hint */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center pb-[calc(1.75rem+env(safe-area-inset-bottom))]">
           {!ready ? (
             <div role="status" className="flex items-center gap-3 text-gold">
