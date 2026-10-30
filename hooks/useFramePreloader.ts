@@ -3,90 +3,107 @@
 
 import { useEffect, useRef, useState } from "react";
 
-interface UseFramePreloaderOptions {
-  folderPath?: string;
+type UseFramePreloaderOptions = {
   totalFrames?: number;
+  frameCount?: number;
+  folderPath?: string;
   basePath?: string;
   extension?: string;
-  batchSize?: number;
   enabled?: boolean;
-}
+};
 
 export function useFramePreloader(
-  options?: UseFramePreloaderOptions | string | number,
+  frameCountOrOptions?: number | UseFramePreloaderOptions | string,
   folderPathArg?: string,
   enabledArg: boolean = true
 ) {
-  const [frames, setFrames] = useState<HTMLImageElement[]>([]);
+  const [loadedMask, setLoadedMask] = useState<boolean[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadedCount, setLoadedCount] = useState(0);
 
-  // Normalise all supported call styles:
-  //   useFramePreloader("/frames")
-  //   useFramePreloader({ folderPath, totalFrames })
-  //   useFramePreloader(frameCount, folderPath, enabled)
-  let opts: UseFramePreloaderOptions;
-  if (typeof options === "number") {
-    opts = { totalFrames: options, folderPath: folderPathArg, enabled: enabledArg };
-  } else if (typeof options === "string") {
-    opts = { folderPath: options, enabled: enabledArg };
-  } else {
-    opts = { enabled: enabledArg, ...(options ?? {}) };
-  }
-
-  const folderPath = opts.folderPath || opts.basePath || "/frames";
-  const totalFrames = opts.totalFrames || 121;
-  const ext = opts.extension || "webp";
-  const enabled = opts.enabled ?? true;
-
   const imagesRef = useRef<HTMLImageElement[]>([]);
 
+  const options: UseFramePreloaderOptions =
+    typeof frameCountOrOptions === "number"
+      ? { totalFrames: frameCountOrOptions, folderPath: folderPathArg, enabled: enabledArg }
+      : typeof frameCountOrOptions === "string"
+      ? { folderPath: frameCountOrOptions }
+      : frameCountOrOptions || {};
+
+  const totalFrames = options.totalFrames ?? options.frameCount ?? 121;
+  const folderPath = options.folderPath ?? options.basePath ?? "/frames";
+  const extension = options.extension ?? "webp";
+  const enabled = options.enabled ?? true;
+
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || totalFrames <= 0) return;
 
-    let isMounted = true;
-    const loadedImages: HTMLImageElement[] = new Array(totalFrames);
+    let cancelled = false;
     let count = 0;
-
-    setIsLoaded(false);
-    setLoadedCount(0);
-
     const cleanFolder = folderPath.endsWith("/") ? folderPath.slice(0, -1) : folderPath;
 
-    const handleDone = () => {
-      if (!isMounted) return;
-      count++;
-      setLoadedCount(count);
-      if (count === totalFrames) setIsLoaded(true);
-    };
-
-    for (let i = 0; i < totalFrames; i++) {
-      const img = new Image();
-      const frameNum = String(i + 1).padStart(4, "0");
-      img.onload = handleDone;
-      img.onerror = handleDone;
-      img.src = `${cleanFolder}/frame-${frameNum}.${ext}`;
-      loadedImages[i] = img;
-    }
+    const loadedImages: HTMLImageElement[] = Array.from({ length: totalFrames }, () => new Image());
+    const mask = new Array(totalFrames).fill(false);
 
     imagesRef.current = loadedImages;
-    setFrames(loadedImages);
+    setLoadedMask(mask);
+    setLoadedCount(0);
+    setIsLoaded(false);
+
+    const markLoaded = (index: number) => {
+      if (cancelled) return;
+      mask[index] = true;
+      count++;
+      setLoadedCount(count);
+      setLoadedMask([...mask]);
+      if (count >= totalFrames) setIsLoaded(true);
+    };
+
+    const loadFrame = (i: number) => {
+      if (loadedImages[i].src) return;
+      const img = loadedImages[i];
+      img.decoding = "async";
+      img.onload = () => markLoaded(i);
+      img.onerror = () => markLoaded(i);
+      const frameNum = String(i + 1).padStart(4, "0");
+      img.src = `${cleanFolder}/frame-${frameNum}.${extension}`;
+    };
+
+    // PHASE 1: Load First 5 frames immediately (Instant zero-second start)
+    for (let i = 0; i < Math.min(5, totalFrames); i++) {
+      loadFrame(i);
+    }
+
+    // PHASE 2: Load Keyframes across the sequence (every 5th frame)
+    setTimeout(() => {
+      if (cancelled) return;
+      for (let i = 5; i < totalFrames; i += 5) {
+        loadFrame(i);
+      }
+    }, 50);
+
+    // PHASE 3: Fill in remaining intermediate frames
+    setTimeout(() => {
+      if (cancelled) return;
+      for (let i = 0; i < totalFrames; i++) {
+        loadFrame(i);
+      }
+    }, 200);
 
     return () => {
-      isMounted = false;
+      cancelled = true;
     };
-  }, [folderPath, totalFrames, ext, enabled]);
+  }, [enabled, totalFrames, folderPath, extension]);
 
-  const progress = totalFrames > 0 ? (loadedCount / totalFrames) * 100 : 0;
+  const progress = totalFrames > 0 ? Math.round((loadedCount / totalFrames) * 100) : 0;
 
   return {
-    frames,
-    images: frames,
+    frames: imagesRef.current,
+    images: imagesRef.current,
     imagesRef,
+    loadedMask,
     isLoaded,
-    isReady: isLoaded,
     progress,
-    loadProgress: progress,
     loadedCount,
   };
 }

@@ -28,8 +28,6 @@ interface CinematicStageProps {
   onBuyClick: () => void;
 }
 
-const READY_FRAMES = 5; // Ready almost instantly after first few frames load
-
 const posterSrc = (folderPath: string, frameCount: number) =>
   `/${folderPath}/frame-${String(frameCount).padStart(4, "0")}.webp`;
 
@@ -108,10 +106,8 @@ export function CinematicProductScroll({
   const [added, setAdded] = useState(false);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Static mode ONLY if user explicitly enabled prefers-reduced-motion in OS
   const staticMode = reducedMotion;
 
-  // Start loading when the section is near, then stop watching
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -135,21 +131,19 @@ export function CinematicProductScroll({
     []
   );
 
-  const { images, isLoaded, progress, loadedCount } = useFramePreloader(
+  const { images, isLoaded, progress } = useFramePreloader(
     frameCount,
     folderPath,
     isInView && !staticMode
   );
   const currentFrame = useScrollFrame(containerRef, frameCount);
 
-  // The CTA only appears once every annotation has finished, so they never collide
   const lastAnnotationEnd = annotations.reduce((m, a) => Math.max(m, a.endFrame), 0);
   const ctaStart = Math.min(
     frameCount - 1,
     Math.max(Math.floor(frameCount * 0.72), lastAnnotationEnd + 1)
   );
   const showCta = currentFrame >= ctaStart;
-  const ready = loadedCount >= Math.min(READY_FRAMES, frameCount);
 
   const handleBuy = () => {
     onBuyClick();
@@ -193,7 +187,7 @@ export function CinematicProductScroll({
     );
   }
 
-  /* ───────── Scroll-scrubbed version ───────── */
+  /* ───────── Instant Scroll-scrubbed version ───────── */
   return (
     <section
       ref={containerRef}
@@ -202,7 +196,6 @@ export function CinematicProductScroll({
       className="relative h-[320svh] bg-ink"
     >
       <div className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden">
-        {/* Screen readers get the content once, in order */}
         <div className="sr-only">
           <h2>{productName}</h2>
           <ul>
@@ -214,20 +207,8 @@ export function CinematicProductScroll({
           </ul>
         </div>
 
-        {/* Loading: only until first few frames are ready */}
-        {isInView && !ready && (
-          <div
-            role="status"
-            className="absolute z-30 flex flex-col items-center gap-3 text-gold"
-          >
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-            <span className="text-xs uppercase tracking-[0.25em] tabular-nums">
-              Extracting Botanicals {progress}%
-            </span>
-          </div>
-        )}
-
-        {images.length > 0 && <FrameCanvas images={images} currentFrame={currentFrame} />}
+        {/* Instant Canvas Render */}
+        <FrameCanvas images={images} currentFrame={currentFrame} />
 
         <Veil />
 
@@ -270,8 +251,8 @@ export function CinematicProductScroll({
           </div>
         </div>
 
-        {/* Thin progress line while remaining frames stream in */}
-        {ready && !isLoaded && (
+        {/* Subtle background streaming line */}
+        {!isLoaded && (
           <div aria-hidden="true" className="absolute inset-x-0 bottom-0 z-30 h-0.5 bg-white/10">
             <div
               className="h-full bg-gold transition-[width] duration-300"

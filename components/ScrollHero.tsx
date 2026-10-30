@@ -8,12 +8,9 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { FrameCanvas } from "@/components/FrameCanvas";
 
 const TOTAL_FRAMES = 121;
-const READY_FRAMES = 5;
-
 const STILL_FRAME = 1;
 
 const frameSrc = (n: number) => `/frames/frame-${String(n).padStart(4, "0")}.webp`;
-
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
 function HeroCopy({ style }: { style?: React.CSSProperties }) {
@@ -34,17 +31,14 @@ export function ScrollHero() {
   const containerRef = useRef<HTMLElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
-  // Static mode ONLY if user explicitly enabled prefers-reduced-motion
   const staticMode = reducedMotion;
 
-  const { images, progress, loadedCount } = useFramePreloader(
+  const { images, progress, isLoaded } = useFramePreloader(
     TOTAL_FRAMES,
     "frames",
     !staticMode
   );
   const currentFrame = useScrollFrame(containerRef, TOTAL_FRAMES);
-
-  const ready = loadedCount >= Math.min(READY_FRAMES, TOTAL_FRAMES);
 
   /* ───────── Still version (reduced motion only) ───────── */
   if (staticMode) {
@@ -71,9 +65,8 @@ export function ScrollHero() {
     );
   }
 
-  /* ───────── Scroll-scrubbed version ───────── */
+  /* ───────── Instant Scroll-scrubbed version ───────── */
   const progressFraction = currentFrame / Math.max(TOTAL_FRAMES - 1, 1);
-
   const copyOpacity = clamp01(1 - (progressFraction - 0.08) / 0.27);
   const hintVisible = currentFrame < 4;
 
@@ -84,19 +77,8 @@ export function ScrollHero() {
       className="relative h-[250svh] bg-ink"
     >
       <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
-        {!ready && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={frameSrc(1)}
-            alt=""
-            aria-hidden="true"
-            fetchPriority="high"
-            decoding="async"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        )}
-
-        {images.length > 0 && <FrameCanvas images={images} currentFrame={currentFrame} />}
+        {/* Instant Canvas Render */}
+        <FrameCanvas images={images} currentFrame={currentFrame} />
 
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-ink via-ink/20 to-ink/60" />
 
@@ -105,24 +87,24 @@ export function ScrollHero() {
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center pb-[calc(1.75rem+env(safe-area-inset-bottom))]">
-          {!ready ? (
-            <div role="status" className="flex items-center gap-3 text-gold">
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-gold border-t-transparent" />
-              <span className="text-[11px] uppercase tracking-[0.25em] tabular-nums">
-                Preparing Botanicals {progress}%
-              </span>
-            </div>
-          ) : (
-            <span
-              aria-hidden="true"
-              className={`block text-[11px] uppercase tracking-[0.25em] text-cream/70 transition-opacity duration-500 ${
-                hintVisible ? "animate-bounce opacity-100" : "opacity-0"
-              }`}
-            >
-              Scroll to Explore ↓
-            </span>
-          )}
+          <span
+            aria-hidden="true"
+            className={`block text-[11px] uppercase tracking-[0.25em] text-cream/70 transition-opacity duration-500 ${
+              hintVisible ? "animate-bounce opacity-100" : "opacity-0"
+            }`}
+          >
+            Scroll to Explore ↓
+          </span>
         </div>
+
+        {!isLoaded && (
+          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 z-30 h-0.5 bg-white/10">
+            <div
+              className="h-full bg-gold transition-[width] duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
       </div>
     </section>
   );
