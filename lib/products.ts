@@ -18,7 +18,7 @@ export const PRODUCTS: Product[] = [
     name: "Fulany Hair Oil",
     size: "50ml",
     price: 1500,
-    image: "/oil.png",
+    image: "/oil.webp",
     description:
       "Pure West African botanical infusion designed to seal moisture, nourish the scalp, and promote natural shine without heaviness.",
     tag: "Daily Scalp Care",
@@ -29,7 +29,7 @@ export const PRODUCTS: Product[] = [
     name: "Fulany Hair Elixir",
     size: "100ml",
     price: 3000,
-    image: "/elixir.png",
+    image: "/elixir.webp",
     description:
       "Concentrated botanical elixir engineered for deep follicle revitalization, edge restoration, and lasting moisture lock.",
     tag: "Best Seller",
@@ -40,7 +40,7 @@ export const PRODUCTS: Product[] = [
     name: "Fulany Hair Butter",
     size: "200g",
     price: 6000,
-    image: "/butter.png",
+    image: "/butter.webp",
     description:
       "Rich, velvety whipped butter formulation crafting an impenetrable moisture seal for textured, dry, or chemically treated hair.",
     tag: "Moisture Lock",

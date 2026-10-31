@@ -35,33 +35,6 @@ export const COMMERCE = {
   standardShippingFee: SHIPPING_FEE,
 };
 
-export const PRODUCTS = [
-  {
-    id: "hair-oil",
-    name: "Hair Oil",
-    size: "50ml",
-    price: 1500,
-    description: "Pure cold-pressed botanical oil blend for nourishment.",
-    image: "/oil.png",
-  },
-  {
-    id: "hair-elixir",
-    name: "Hair Elixir",
-    size: "100ml",
-    price: 3000,
-    description: "Concentrated herbal matrix for hair growth and retention.",
-    image: "/elixir.png",
-  },
-  {
-    id: "hair-butter",
-    name: "Hair Butter",
-    size: "200g",
-    price: 6000,
-    description: "Whipped unrefined West African shea butter infusion.",
-    image: "/butter.png",
-  },
-];
-
 export const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno",
   "Cross River", "Delta", "Ebonyi", "Edo", "Ekiti", "Enugu", "FCT - Abuja", "Gombe",

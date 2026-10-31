@@ -10,7 +10,6 @@
     "extract-frames": "node scripts/extract-frames.mjs"
   },
   "dependencies": {
-    "framer-motion": "^14.7.1",
     "lucide-react": "^0.475.0",
     "next": "^16.4.3",
     "react": "^19.3.1",

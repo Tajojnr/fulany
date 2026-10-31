@@ -139,8 +139,10 @@ export function Storefront() {
           <a href="/" aria-label="Fulany.ng home" className="group flex shrink-0 items-center py-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/fulany-logo-transparent.png"
+              src="/fulany-logo-transparent.webp"
               alt="Fulany.ng"
+              width={844}
+              height={308}
               decoding="async"
               className="brand-logo-img transition-transform duration-500 group-hover:scale-[1.02]"
             />

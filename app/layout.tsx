@@ -82,7 +82,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: "Fulany.ng",
   url: SITE_URL,
-  logo: `${SITE_URL}/fulany-logo-transparent.png`,
+  logo: `${SITE_URL}/fulany-logo-transparent.webp`,
   description: "West African botanical hair care, handcrafted in Nigeria.",
   founder: { "@type": "Person", name: "Hafsah Sani" },
   contactPoint: {

@@ -80,8 +80,10 @@ export function Footer() {
           <Link href="/" aria-label="Fulany.ng home" className="inline-block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/fulany-logo-transparent.png"
+              src="/fulany-logo-transparent.webp"
               alt="Fulany.ng"
+              width={844}
+              height={308}
               loading="lazy"
               decoding="async"
               className="brand-logo-img"

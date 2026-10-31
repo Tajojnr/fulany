@@ -1,16 +1,13 @@
 ﻿// components/ScrollHero.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useFramePreloader } from "@/hooks/useFramePreloader";
 import { useScrollFrame } from "@/hooks/useScrollFrame";
-import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { FrameCanvas } from "@/components/FrameCanvas";
 
-const TOTAL_FRAMES = 121;
-const STILL_FRAME = 1;
+const TOTAL_FRAMES = 61;
 
-const frameSrc = (n: number) => `/frames/frame-${String(n).padStart(4, "0")}.webp`;
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
 function HeroCopy({ style }: { style?: React.CSSProperties }) {
@@ -29,41 +26,8 @@ function HeroCopy({ style }: { style?: React.CSSProperties }) {
 
 export function ScrollHero() {
   const containerRef = useRef<HTMLElement>(null);
-  const reducedMotion = usePrefersReducedMotion();
-
-  const staticMode = reducedMotion;
-
-  const { images, progress, isLoaded } = useFramePreloader(
-    TOTAL_FRAMES,
-    "frames",
-    !staticMode
-  );
+  const { images, progress, isLoaded } = useFramePreloader(TOTAL_FRAMES, "frames");
   const currentFrame = useScrollFrame(containerRef, TOTAL_FRAMES);
-
-  /* ───────── Still version (reduced motion only) ───────── */
-  if (staticMode) {
-    return (
-      <section
-        ref={containerRef}
-        aria-label="Introduction"
-        className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-ink"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={frameSrc(STILL_FRAME)}
-          alt=""
-          aria-hidden="true"
-          fetchPriority="high"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 z-10 bg-gradient-to-t from-ink via-ink/30 to-ink/60" />
-        <div className="relative z-20 w-full px-6 py-24 md:px-16">
-          <HeroCopy />
-        </div>
-      </section>
-    );
-  }
 
   /* ───────── Instant Scroll-scrubbed version ───────── */
   const progressFraction = currentFrame / Math.max(TOTAL_FRAMES - 1, 1);
