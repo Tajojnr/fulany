@@ -103,10 +103,16 @@ export function CinematicProductScroll({
   const containerRef = useRef<HTMLElement>(null);
   const reducedMotion = usePrefersReducedMotion();
   const [isInView, setIsInView] = useState(false);
+  const [motionPreferenceReady, setMotionPreferenceReady] = useState(false);
   const [added, setAdded] = useState(false);
   const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const staticMode = reducedMotion;
+  const animationEnabled = motionPreferenceReady && !staticMode;
+
+  useEffect(() => {
+    setMotionPreferenceReady(true);
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -131,12 +137,17 @@ export function CinematicProductScroll({
     []
   );
 
-  const { images, isLoaded, progress } = useFramePreloader(
+  const currentFrame = useScrollFrame(
+    containerRef,
+    frameCount,
+    animationEnabled
+  );
+  const { images, isLoaded, progress, loadedCount } = useFramePreloader(
     frameCount,
     folderPath,
-    isInView && !staticMode
+    isInView && animationEnabled,
+    currentFrame
   );
-  const currentFrame = useScrollFrame(containerRef, frameCount);
 
   const lastAnnotationEnd = annotations.reduce((m, a) => Math.max(m, a.endFrame), 0);
   const ctaStart = Math.min(
@@ -208,7 +219,20 @@ export function CinematicProductScroll({
         </div>
 
         {/* Instant Canvas Render */}
-        <FrameCanvas images={images} currentFrame={currentFrame} />
+        <img
+          src={posterSrc(folderPath, 1)}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <FrameCanvas
+          images={images}
+          currentFrame={currentFrame}
+          loadedCount={loadedCount}
+          className="absolute inset-0"
+        />
 
         <Veil />
 

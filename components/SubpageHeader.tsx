@@ -1,5 +1,6 @@
 // components/SubpageHeader.tsx
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 
 export function SubpageHeader() {
@@ -17,13 +18,13 @@ export function SubpageHeader() {
         </Link>
 
         <Link href="/" aria-label="Fulany.ng home" className="flex items-center py-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/fulany-logo-transparent.webp"
             alt="Fulany.ng"
             width={844}
             height={308}
-            decoding="async"
+            sizes="110px"
+            preload
             className="brand-logo-img"
           />
         </Link>

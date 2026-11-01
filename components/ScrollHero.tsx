@@ -1,8 +1,9 @@
 ﻿// components/ScrollHero.tsx
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFramePreloader } from "@/hooks/useFramePreloader";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { useScrollFrame } from "@/hooks/useScrollFrame";
 import { FrameCanvas } from "@/components/FrameCanvas";
 
@@ -26,8 +27,24 @@ function HeroCopy({ style }: { style?: React.CSSProperties }) {
 
 export function ScrollHero() {
   const containerRef = useRef<HTMLElement>(null);
-  const { images, progress, isLoaded } = useFramePreloader(TOTAL_FRAMES, "frames");
-  const currentFrame = useScrollFrame(containerRef, TOTAL_FRAMES);
+  const [motionPreferenceReady, setMotionPreferenceReady] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
+  useEffect(() => {
+    setMotionPreferenceReady(true);
+  }, []);
+
+  const animationEnabled = motionPreferenceReady && !reducedMotion;
+  const currentFrame = useScrollFrame(
+    containerRef,
+    TOTAL_FRAMES,
+    animationEnabled
+  );
+  const { images, progress, isLoaded, loadedCount } = useFramePreloader(
+    TOTAL_FRAMES,
+    "frames",
+    animationEnabled,
+    currentFrame
+  );
 
   /* ───────── Instant Scroll-scrubbed version ───────── */
   const progressFraction = currentFrame / Math.max(TOTAL_FRAMES - 1, 1);
@@ -38,11 +55,31 @@ export function ScrollHero() {
     <section
       ref={containerRef}
       aria-label="Introduction"
-      className="relative h-[250svh] bg-ink"
+      className={`relative bg-ink ${
+        reducedMotion ? "min-h-[100svh]" : "h-[250svh]"
+      }`}
     >
-      <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
+      <div
+        className={`${
+          reducedMotion ? "relative min-h-[100svh]" : "sticky top-0 h-[100svh]"
+        } w-full overflow-hidden`}
+      >
+        {/* Keep the hero visible while its first canvas frame is decoding. */}
+        <img
+          src="/frames/frame-0001.webp"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         {/* Instant Canvas Render */}
-        <FrameCanvas images={images} currentFrame={currentFrame} />
+        <FrameCanvas
+          images={images}
+          currentFrame={currentFrame}
+          loadedCount={loadedCount}
+          className="absolute inset-0"
+        />
 
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-ink via-ink/20 to-ink/60" />
 
@@ -54,7 +91,9 @@ export function ScrollHero() {
           <span
             aria-hidden="true"
             className={`block text-[11px] uppercase tracking-[0.25em] text-cream/70 transition-opacity duration-500 ${
-              hintVisible ? "animate-bounce opacity-100" : "opacity-0"
+              hintVisible
+                ? `${reducedMotion ? "" : "animate-bounce "}opacity-100`
+                : "opacity-0"
             }`}
           >
             Scroll to Explore ↓

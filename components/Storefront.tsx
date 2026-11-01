@@ -137,13 +137,13 @@ export function Storefront() {
           className="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between px-5 sm:px-6"
         >
           <a href="/" aria-label="Fulany.ng home" className="group flex shrink-0 items-center py-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src="/fulany-logo-transparent.webp"
               alt="Fulany.ng"
               width={844}
               height={308}
-              decoding="async"
+              sizes="110px"
+              preload
               className="brand-logo-img transition-transform duration-500 group-hover:scale-[1.02]"
             />
           </a>
@@ -190,15 +190,15 @@ export function Storefront() {
         <CinematicProductScroll
           id="elixir-cinematic"
           folderPath="frames-elixir"
-          frameCount={240}
+          frameCount={121}
           productName="Fulany Hair Elixir"
           price="₦3,000 / 100ml"
           onBuyClick={() => addToCart("hair-elixir")}
           annotations={[
             {
               id: "e-1",
-              startFrame: 30,
-              endFrame: 100,
+              startFrame: 15,
+              endFrame: 50,
               x: "5%",
               y: "20%",
               title: "Raw Origins",
@@ -207,8 +207,8 @@ export function Storefront() {
             },
             {
               id: "e-2",
-              startFrame: 120,
-              endFrame: 190,
+              startFrame: 60,
+              endFrame: 95,
               x: "50%",
               y: "60%",
               title: "Follicle Revival",
@@ -223,15 +223,15 @@ export function Storefront() {
         <CinematicProductScroll
           id="butter-cinematic"
           folderPath="frames-butter"
-          frameCount={240}
+          frameCount={121}
           productName="Fulany Hair Butter"
           price="₦6,000 / 200g"
           onBuyClick={() => addToCart("hair-butter")}
           annotations={[
             {
               id: "b-1",
-              startFrame: 40,
-              endFrame: 110,
+              startFrame: 20,
+              endFrame: 55,
               x: "50%",
               y: "15%",
               title: "Whipped Velour",
@@ -240,8 +240,8 @@ export function Storefront() {
             },
             {
               id: "b-2",
-              startFrame: 130,
-              endFrame: 200,
+              startFrame: 65,
+              endFrame: 100,
               x: "5%",
               y: "65%",
               title: "Impenetrable Seal",

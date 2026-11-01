@@ -5,13 +5,14 @@ import { useEffect, useState, type RefObject } from "react";
 
 export function useScrollFrame(
   containerRef: RefObject<HTMLElement | null>,
-  frameCount: number
+  frameCount: number,
+  enabled = true
 ) {
   const [currentFrame, setCurrentFrame] = useState(0);
 
   useEffect(() => {
     const el = containerRef.current;
-    if (!el || frameCount < 1) return;
+    if (!enabled || !el || frameCount < 1) return;
 
     let raf = 0;
     let listening = false;
@@ -71,7 +72,7 @@ export function useScrollFrame(
       window.removeEventListener("resize", schedule);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [containerRef, frameCount]);
+  }, [containerRef, frameCount, enabled]);
 
   return currentFrame;
 }

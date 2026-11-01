@@ -1,5 +1,6 @@
 // components/Footer.tsx
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, Mail, Phone, ShoppingBag } from "lucide-react";
 import { TikTokIcon, InstagramIcon, WhatsAppIcon } from "@/components/SocialIcons";
 import {
@@ -78,14 +79,13 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-12 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4 lg:gap-10 lg:py-20">
         <div className="sm:col-span-2 lg:col-span-1">
           <Link href="/" aria-label="Fulany.ng home" className="inline-block">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src="/fulany-logo-transparent.webp"
               alt="Fulany.ng"
               width={844}
               height={308}
+              sizes="110px"
               loading="lazy"
-              decoding="async"
               className="brand-logo-img"
             />
           </Link>

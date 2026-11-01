@@ -8,6 +8,7 @@ export interface FrameCanvasProps {
   frames?: HTMLImageElement[];
   currentFrame: number;
   isLoaded?: boolean;
+  loadedCount?: number;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export function FrameCanvas({
   images,
   frames,
   currentFrame,
+  loadedCount = 0,
   className = "",
 }: FrameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -24,55 +26,63 @@ export function FrameCanvas({
     const canvas = canvasRef.current;
     if (!canvas || activeFrames.length === 0) return;
 
+    const requestedIndex = Math.min(
+      Math.max(0, currentFrame),
+      activeFrames.length - 1
+    );
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Find requested frame OR nearest previously loaded frame
-    let targetIndex = Math.min(Math.max(0, currentFrame), activeFrames.length - 1);
-    let img = activeFrames[targetIndex];
+    const drawFrame = () => {
+      let targetIndex = requestedIndex;
+      let img = activeFrames[targetIndex];
+      while (
+        targetIndex > 0 &&
+        (!img || !img.complete || img.naturalWidth === 0)
+      ) {
+        targetIndex--;
+        img = activeFrames[targetIndex];
+      }
 
-    // Fallback scanner: scan backwards to find closest ready image
-    while (targetIndex > 0 && (!img || !img.complete || img.naturalWidth === 0)) {
-      targetIndex--;
-      img = activeFrames[targetIndex];
-    }
+      if (!img || !img.complete || img.naturalWidth === 0) return;
 
-    if (!img || !img.complete || img.naturalWidth === 0) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
+      if (width === 0 || height === 0) return;
 
-    if (width === 0 || height === 0) return;
+      if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+      }
 
-    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-    }
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, width, height);
 
-    ctx.save();
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, width, height);
+      const imgRatio = img.naturalWidth / img.naturalHeight;
+      const canvasRatio = width / height;
 
-    const imgRatio = img.naturalWidth / img.naturalHeight;
-    const canvasRatio = width / height;
+      let drawWidth = width;
+      let drawHeight = height;
+      let offsetX = 0;
+      let offsetY = 0;
 
-    let drawWidth = width;
-    let drawHeight = height;
-    let offsetX = 0;
-    let offsetY = 0;
+      if (imgRatio > canvasRatio) {
+        drawWidth = height * imgRatio;
+        offsetX = (width - drawWidth) / 2;
+      } else {
+        drawHeight = width / imgRatio;
+        offsetY = (height - drawHeight) / 2;
+      }
 
-    if (imgRatio > canvasRatio) {
-      drawWidth = height * imgRatio;
-      offsetX = (width - drawWidth) / 2;
-    } else {
-      drawHeight = width / imgRatio;
-      offsetY = (height - drawHeight) / 2;
-    }
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+      ctx.restore();
+    };
 
-    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-    ctx.restore();
-  }, [activeFrames, currentFrame]);
+    drawFrame();
+  }, [activeFrames, currentFrame, loadedCount]);
 
   return (
     <canvas
