@@ -10,7 +10,7 @@ import {
 } from "@/lib/constants";
 
 const PHONE_DISPLAY = "+234 916 075 9492";
-const EMAIL = "sanihafsah93@gmail.com";
+const EMAIL = "fulany.ng@gmail.com";
 
 const money = (n: number) => `₦${n.toLocaleString("en-NG")}`;
 

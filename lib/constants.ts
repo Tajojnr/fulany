@@ -3,7 +3,7 @@
 export const FREE_SHIPPING_THRESHOLD = 10000;
 export const SHIPPING_FEE = 2000;
 export const WHATSAPP_NUMBER = "2349160759492";
-export const CONTACT_EMAIL = "sanihafsah93@gmail.com";
+export const CONTACT_EMAIL = "fulany.ng@gmail.com";
 export const PHONE_DISPLAY = "+234 916 075 9492";
 
 // "\u20A6" is the naira sign, written as an escape so file encoding can never corrupt it

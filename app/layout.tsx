@@ -88,7 +88,7 @@ const organizationSchema = {
   contactPoint: {
     "@type": "ContactPoint",
     telephone: "+234-916-075-9492",
-    email: "sanihafsah93@gmail.com",
+    email: "fulany.ng@gmail.com",
     contactType: "customer support",
     areaServed: "NG",
     availableLanguage: "English",
@@ -134,7 +134,7 @@ const faqSchema = {
       name: "How can I contact Fulany.ng customer support?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "You can reach us directly via WhatsApp at +234 916 075 9492 or email us at sanihafsah93@gmail.com.",
+        text: "You can reach us directly via WhatsApp at +234 916 075 9492 or email us at fulany.ng@gmail.com.",
       },
     },
   ],
